@@ -3,6 +3,7 @@ jdk:
 - oraclejdk8
 before_install:
 - rm -rf target
+script: "mvn verify -B"
 deploy:
   provider: releases
   api_key:

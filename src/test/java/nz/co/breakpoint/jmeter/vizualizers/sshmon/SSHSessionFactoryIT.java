@@ -20,23 +20,10 @@ import static org.junit.Assert.assertTrue;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
-public class SSHSessionFactoryTest {
-    public static SSHServerResource sshServer = new SSHServerResource(22222);
-    public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0", sshServer.getPort());
+public class SSHSessionFactoryIT {
+    public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0",  Integer.valueOf(System.getProperty("sshmon.sshd.port")));
     public SSHSessionFactory instance;
     public Session session;
-
-	@BeforeClass
-    public static void setUpClass() {
-        System.out.println("Starting SSH server");
-        sshServer.start();
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("Stopping SSH server");
-        sshServer.stop();
-    }
 
     @Before
     public void setUp() {
