@@ -22,7 +22,7 @@ import com.jcraft.jsch.Session;
 
 public class SSHSessionFactoryTest {
     public static SSHServerResource sshServer = new SSHServerResource(2222);
-    public static ConnectionDetails localConnection = new ConnectionDetails("127.0.0.1", sshServer.getPort());
+    public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0", sshServer.getPort());
     public SSHSessionFactory instance;
     public Session session;
 

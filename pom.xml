@@ -10,7 +10,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sshmon.sshd.port>2022</sshmon.sshd.port>
     </properties>
 
     <scm>
@@ -44,77 +43,87 @@
                 <script.extension>.sh</script.extension>
             </properties>
         </profile>
-    </profiles>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <!-- used to build the classpath for SSHD startup for intergration test phase -->
-                            <goal>properties</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.bazaarvoice.maven.plugins</groupId>
-                <artifactId>process-exec-maven-plugin</artifactId>
-                <version>0.4</version>
-                <executions>
-                    <execution>
-                        <id>start-sshd</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
+        <profile>
+            <id>skip-integration-tests</id>
+            <activation>
+                <property>
+                    <name>!maven.test.skip</name>
+                </property>
+            </activation>
+            <properties>
+                <sshmon.sshd.port>2022</sshmon.sshd.port>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <!-- used to build the classpath for SSHD startup for intergration test phase -->
+                                    <goal>properties</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.bazaarvoice.maven.plugins</groupId>
+                        <artifactId>process-exec-maven-plugin</artifactId>
+                        <version>0.4</version>
+                        <executions>
+                            <execution>
+                                <id>start-sshd</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>start</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>true</skip>
+                                    <arguments>
+                                        <argument>java</argument>
+                                        <argument>-cp</argument>
+                                        <argument>${org.apache.sshd:sshd-core:jar}${classpath.separator}${org.slf4j:slf4j-api:jar}${classpath.separator}${org.slf4j:slf4j-simple:jar}</argument>
+                                        <argument>org.apache.sshd.server.SshServer</argument>
+                                        <argument>-p</argument>
+                                        <argument>${sshmon.sshd.port}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>stop-sshd</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop-all</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>    
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>2.20</version>
+                        <executions>
+                            <execution>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                         <configuration>
-                            <workingDir>.</workingDir>
-                            <arguments>
-                                <argument>java</argument>
-                                <argument>-cp</argument>
-                                <argument>${org.apache.sshd:sshd-core:jar}${classpath.separator}${org.slf4j:slf4j-api:jar}${classpath.separator}${org.slf4j:slf4j-simple:jar}</argument>
-                                <argument>org.apache.sshd.server.SshServer</argument>
-                                <argument>-p</argument>
-                                <argument>${sshmon.sshd.port}</argument>
-                            </arguments>
+                            <systemPropertyVariables>
+                                <sshmon.sshd.port>${sshmon.sshd.port}</sshmon.sshd.port>
+                            </systemPropertyVariables>
                         </configuration>
-                    </execution>
-                    <execution>
-                        <id>stop-sshd</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop-all</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>    
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.20</version>
-                <executions>
-                    <execution>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <systemPropertyVariables>
-                        <sshmon.sshd.port>${sshmon.sshd.port}</sshmon.sshd.port>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencies>
         <dependency>
