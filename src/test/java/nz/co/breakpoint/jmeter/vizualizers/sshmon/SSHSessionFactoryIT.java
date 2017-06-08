@@ -9,9 +9,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,7 +19,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
 public class SSHSessionFactoryIT {
-    public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0",  Integer.valueOf(System.getProperty("sshmon.sshd.port")));
+    public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0", Integer.valueOf(System.getProperty("sshmon.sshd.port")));
     public SSHSessionFactory instance;
     public Session session;
 
@@ -67,7 +65,7 @@ public class SSHSessionFactoryIT {
         session = instance.create(localConnection);
         assertTrue(instance.validateObject(localConnection, instance.wrap(session)));
     }
-    
+
     @Test
     public void testValidateObjectFalse() throws Exception {
         System.out.println("validateObject/false");

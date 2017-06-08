@@ -11,6 +11,7 @@ import com.jcraft.jsch.Session;
 
 /**
  * Factory class that manages SSH sessions for Apache Commons connection pool.
+ * TODO known_hosts validation
  */
 public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDetails, Session> {
 
@@ -29,6 +30,7 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
             session = jsch.getSession(connectionDetails.getUsername(), connectionDetails.getHost(), connectionDetails.getPort());
             session.setPassword(connectionDetails.getPassword());
             session.setConfig("StrictHostKeyChecking", "no");
+            session.setDaemonThread(true);
             session.setTimeout(60000);
             session.connect();
         } catch (Exception e) {

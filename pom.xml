@@ -28,7 +28,6 @@
             </activation>
             <properties>
                 <classpath.separator>;</classpath.separator>
-                <script.extension>.bat</script.extension>
             </properties>
         </profile>
         <profile>
@@ -40,10 +39,10 @@
             </activation>
             <properties>
                 <classpath.separator>:</classpath.separator>
-                <script.extension>.sh</script.extension>
             </properties>
         </profile>
         <profile>
+            <!-- make sure that all integration test phases are skipped when building only -->
             <id>skip-integration-tests</id>
             <activation>
                 <property>
