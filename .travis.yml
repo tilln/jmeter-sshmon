@@ -1,0 +1,17 @@
+language: java
+jdk:
+- oraclejdk7
+- oraclejdk8
+before_install:
+- rm -rf target
+deploy:
+  provider: releases
+  api_key:
+    secure: il+4mUffdzWdz604Aig4rFjwBowSQMyFCqRomT4MvO0sj1yr5ripdSEsuJN9epfzZJvYuttJ48egNtMf/7Cbxh6/uN4NTFYfMPB6TOYL7OR52WtqFnkUjD0M7LRKCeeO2iWrhWqdhEEcKFuD1rCDKwZRYYgCDCIxLmG++etkxombVjsYu/RwuvTcV97I0ekfMZ7FZTePo3DS7W/1WJx68rGgNZD4STerAtPxpeoSMHo+eXHDfGetBS6TfyDjfewPCRcIJdZ82fo7Cdeks37LqSJJnpG1XNK6Ojd97tp4C9yseq5EZtTbBa1TzNKE46+xnlDCOC0iqZ1q+maKtfqzJTvHJyM6cT9dYY3rm4Xv+yNXNhRGtANSfPsihnHkA/jPj/jAiJU15NjUnv0MT8kmyzu0H9qLE3alz9uoUdY33J3T0Xgj50I+jiynfrug/Mg43rGD23IlHTjtqssW1+ZVjlsh6Ax+LFRA8wzfZuc5Fq7k/R7HdkhVPE+pzw+4wj6WFfBZnepsDLuncN+wOCTgDvz8YtofYTroNc7M3onG/0QgIxyf667gv5kb0KfTxUcv8nCaj9fVDIrWxx1eh7TOeLKxI6z75BpAc6hwwBPmarFYfXtV9Weh8UM58A8KkB1lv3/1x2fFEPJUKE8HjfzoYt8OwvAEajSImWICbQ3Uuqg=
+  file: "target/jmeter-sshmon-*.jar"
+  file_glob: true
+  skip_cleanup: true
+  overwrite: true
+  on:
+    repo: tilln/jmeter-sshmon
+    tags: true
