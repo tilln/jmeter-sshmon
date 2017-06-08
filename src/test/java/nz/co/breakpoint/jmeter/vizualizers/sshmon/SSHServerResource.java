@@ -37,15 +37,17 @@ public class SSHServerResource implements Runnable {
         sshd.setPublickeyAuthenticator(AcceptAllPublickeyAuthenticator.INSTANCE);
         sshd.setTcpipForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
         try {
+            System.out.println("sshd.start()");
             sshd.start();
             while(!stop) {
                 Thread.sleep(100);
             }
+            System.out.println("sshd.stop()");
             sshd.stop();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
     
@@ -61,7 +63,7 @@ public class SSHServerResource implements Runnable {
                 Thread.sleep(100);
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 }

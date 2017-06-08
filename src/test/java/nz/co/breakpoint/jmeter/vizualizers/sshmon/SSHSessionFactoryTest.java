@@ -21,18 +21,20 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
 public class SSHSessionFactoryTest {
-    public static SSHServerResource sshServer = new SSHServerResource(2222);
+    public static SSHServerResource sshServer = new SSHServerResource(22222);
     public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0", sshServer.getPort());
     public SSHSessionFactory instance;
     public Session session;
 
 	@BeforeClass
     public static void setUpClass() {
+        System.out.println("Starting SSH server");
         sshServer.start();
     }
 
     @AfterClass
     public static void tearDownClass() {
+        System.out.println("Stopping SSH server");
         sshServer.stop();
     }
 
