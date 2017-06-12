@@ -46,7 +46,7 @@
             <id>skip-integration-tests</id>
             <activation>
                 <property>
-                    <name>!maven.test.skip</name>
+                    <name>!skipTests</name>
                 </property>
             </activation>
             <properties>
