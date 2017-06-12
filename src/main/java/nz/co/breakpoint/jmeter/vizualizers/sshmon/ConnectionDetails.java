@@ -11,63 +11,63 @@ import java.util.Objects;
  */
 public class ConnectionDetails {
 
-	protected final String host;
-	protected final int port;
-	protected final String username;
-	protected final String password;
-	protected final byte[] privateKey;
+    protected final String host;
+    protected final int port;
+    protected final String username;
+    protected final String password;
+    protected final byte[] privateKey;
 
-	public ConnectionDetails(String host) {
-		this("", host);
-	}
+    public ConnectionDetails(String host) {
+        this("", host);
+    }
 
-	public ConnectionDetails(String host, int port) {
-		this("", host, port);
-	}
+    public ConnectionDetails(String host, int port) {
+        this("", host, port);
+    }
 
-	public ConnectionDetails(String username, String host) {
-		this(username, host, 22);
-	}
+    public ConnectionDetails(String username, String host) {
+        this(username, host, 22);
+    }
 
-	public ConnectionDetails(String username, String host, int port) {
-		this(username, host, port, "");
-	}
+    public ConnectionDetails(String username, String host, int port) {
+        this(username, host, port, "");
+    }
 
-	public ConnectionDetails(String username, String host, String password) {
-		this(username, host, 22, password);
-	}
+    public ConnectionDetails(String username, String host, String password) {
+        this(username, host, 22, password);
+    }
 
-	public ConnectionDetails(String username, String host, int port, String password) {
-		this(username, host, port, password, null);
-	}
+    public ConnectionDetails(String username, String host, int port, String password) {
+        this(username, host, port, password, null);
+    }
 
-	public ConnectionDetails(String username, String host, int port, String password, byte[] privateKey) {
+    public ConnectionDetails(String username, String host, int port, String password, byte[] privateKey) {
         this.username = username;
-		this.host = host;
+        this.host = host;
         this.port = port;
         this.password = password;
         this.privateKey = privateKey;
-	}
+    }
 
-	public String getHost() {
-		return host;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	public int getPort() {
-		return port;
-	}
+    public int getPort() {
+        return port;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getUsername() {
+        return username;
+    }
 
     public byte[] getPrivateKey() {
         return privateKey;
     }
     
-	public String getPassword() {
-		return password;
-	}
+    public String getPassword() {
+        return password;
+    }
     
     @Override
     public boolean equals(Object other) {
@@ -82,10 +82,10 @@ public class ConnectionDetails {
             && (port == o.getPort());
     }
     
-	@Override
-	public String toString() {
-		return (username.isEmpty()? "" : username+"@")+host+":"+port;
-	}
+    @Override
+    public String toString() {
+        return (username.isEmpty()? "" : username+"@")+host+":"+port;
+    }
     
     @Override
     public int hashCode() {

@@ -12,9 +12,7 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
@@ -106,13 +104,13 @@ public class SSHMonSampler
         }
     }
 
-	public String getMetricName() {
-		return metricName;
-	}
+    public String getMetricName() {
+        return metricName;
+    }
 
-	public void setMetricName(String metricName) {
-		this.metricName = metricName;
-	}
+    public void setMetricName(String metricName) {
+        this.metricName = metricName;
+    }
 
     public ConnectionDetails getConnectionDetails() {
         return connectionDetails;
@@ -130,19 +128,19 @@ public class SSHMonSampler
         this.remoteCommand = remoteCommand;
     }
     
-	public boolean isSampleDeltaValue() {
-		return sampleDeltaValue;
-	}
+    public boolean isSampleDeltaValue() {
+        return sampleDeltaValue;
+    }
 
-	public void setSampleDeltaValue(boolean sampleDeltaValue) {
-		this.sampleDeltaValue = sampleDeltaValue;
-	}
+    public void setSampleDeltaValue(boolean sampleDeltaValue) {
+        this.sampleDeltaValue = sampleDeltaValue;
+    }
 
-	public double getOldValue() {
-		return oldValue;
-	}
+    public double getOldValue() {
+        return oldValue;
+    }
 
-	public void setOldValue(double oldValue) {
-		this.oldValue = oldValue;
-	}
+    public void setOldValue(double oldValue) {
+        this.oldValue = oldValue;
+    }
 }
