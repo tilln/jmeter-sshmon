@@ -27,7 +27,7 @@ Extract the [zip package](https://jmeter-plugins.org/files/packages/tilln-sshmon
 
 ### Via Manual Download
 
-1. Copy the [jmeter-sshmon jar file](https://github.com/tilln/jmeter-sshmon/releases/download/1.0/jmeter-sshmon-1.0.jar) into JMeter's lib/ext directory.
+1. Copy the [jmeter-sshmon jar file](https://github.com/tilln/jmeter-sshmon/releases/download/1.0/jmeter-sshmon-1.0-SNAPSHOT.jar) into JMeter's lib/ext directory.
 2. Copy the following dependencies into JMeter's lib directory:
 	* [kg.apc / jmeter-plugins-cmn-jmeter](https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-cmn-jmeter/0.5/jmeter-plugins-cmn-jmeter-0.5.jar)
 3. Make sure to remove any older version of the jar file from JMeter's lib directory, e.g. `jmeter-plugins-cmn-jmeter-0.4.jar`
