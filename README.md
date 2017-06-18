@@ -16,7 +16,7 @@ This plugin is powered by [JMeter-Plugins](https://jmeter-plugins.org/) componen
 
 Installation
 ------------
-<!--
+
 ### Via [PluginsManager](https://jmeter-plugins.org/wiki/PluginsManager/)
 
 Under tab "Available Plugins", select "SSHMon Sample Collector", then click "Apply Changes and Restart JMeter".
@@ -24,11 +24,11 @@ Under tab "Available Plugins", select "SSHMon Sample Collector", then click "App
 ### Via Package from [JMeter-Plugins.org](https://jmeter-plugins.org/)
 
 Extract the [zip package](https://jmeter-plugins.org/files/packages/tilln-sshmon-1.0.zip) into JMeter's lib directory, then restart JMeter.
--->
+
 
 ### Via Manual Download
 
-1. Copy the [jmeter-sshmon jar file](https://github.com/tilln/jmeter-sshmon/releases/download/1.0-SNAPSHOT/jmeter-sshmon-1.0-SNAPSHOT.jar) into JMeter's lib/ext directory.
+1. Copy the [jmeter-sshmon jar file](https://github.com/tilln/jmeter-sshmon/releases/download/1.0/jmeter-sshmon-1.0.jar) into JMeter's lib/ext directory.
 2. Copy the following dependencies into JMeter's lib directory:
 	* [kg.apc / jmeter-plugins-cmn-jmeter](https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-cmn-jmeter/0.5/jmeter-plugins-cmn-jmeter-0.5.jar)
     * [commons-io / commons-io](https://search.maven.org/remotecontent?filepath=commons-io/commons-io/2.5/commons-io-2.5.jar)
