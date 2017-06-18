@@ -3,35 +3,52 @@ package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 /**
  * Factory class that manages SSH sessions for Apache Commons connection pool.
- * TODO known_hosts validation
  */
 public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDetails, Session> {
 
     private static final Logger log = LoggingManager.getLoggerForClass();
+
+    private final JSch jsch = new JSch();
+    private boolean hostKeyValidation = false;
+
+    public SSHSessionFactory() {
+        String knownHosts = JMeterUtils.getProperty("jmeter.sshmon.knownHosts");
+        if (knownHosts != null && !knownHosts.isEmpty()) {
+            try {
+                log.debug("known hosts file set to "+knownHosts);
+                jsch.setKnownHosts(knownHosts);
+                hostKeyValidation = true;
+            }
+            catch (JSchException e) {
+                log.error("Failed to set known hosts ", e);
+            }
+        }
+    }
 
     @Override
     public Session create(ConnectionDetails connectionDetails) throws Exception {
         log.debug("Creating session for "+connectionDetails);
         Session session = null;
         try {
-            JSch jsch = new JSch();
             byte[] privateKey = connectionDetails.getPrivateKey();
             if (privateKey != null) {
                 jsch.addIdentity(connectionDetails.getUsername(), privateKey, null, connectionDetails.getPassword().getBytes());
             }
             session = jsch.getSession(connectionDetails.getUsername(), connectionDetails.getHost(), connectionDetails.getPort());
             session.setPassword(connectionDetails.getPassword());
-            session.setConfig("StrictHostKeyChecking", "no");
+            if (!hostKeyValidation) {
+                session.setConfig("StrictHostKeyChecking", "no");
+            }
             session.setDaemonThread(true);
-            session.setTimeout(60000);
             session.connect();
         } catch (Exception e) {
             log.error("Failed to connect to "+connectionDetails);

@@ -1,9 +1,7 @@
 package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 
 import java.util.ArrayList;
-
 import kg.apc.jmeter.vizualizers.MonitoringResultsCollector;
-
 import org.apache.jmeter.testelement.property.CollectionProperty;
 import org.apache.jmeter.testelement.property.JMeterProperty;
 import org.apache.jmeter.util.JMeterUtils;
@@ -25,11 +23,11 @@ public class SSHMonCollector
     protected String getPrefix() { return "SSHMon"; }
 
     @Override
-    protected String getForceFilePropertyName() { return "forceSSHMonFile"; }
+    protected String getForceFilePropertyName() { return "jmeter.sshmon.forceOutputFile"; }
 
     @Override
     protected int getInterval() {
-        return JMeterUtils.getPropDefault("jmeterPlugin.sshmon.interval", 1000);
+        return JMeterUtils.getPropDefault("jmeter.sshmon.interval", 1000);
     }
 
     @Override

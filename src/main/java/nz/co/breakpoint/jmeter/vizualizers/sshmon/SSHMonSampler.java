@@ -75,9 +75,6 @@ public class SSHMonSampler
         }
         catch (InterruptedIOException ex) { // stopping the test has caused a thread interrupt
             log.info(ex.toString());
-        } 
-        catch (JSchException ex) { // stopping the test has closed the session
-            log.info(ex.toString());
         }
         catch (Exception ex) { 
             log.error(ex.toString());

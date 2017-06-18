@@ -21,7 +21,7 @@ public class SSHMonGui
         "", "", 22, "", "", "", "", false
     };
     protected static int[] columnWidths = new int[]{
-        100, 100, 50, 100, 100, 100, 500, 20
+        100, 100, 50, 100, 120, 100, 500, 50
     };
 
     public static final String WIKI_PAGE = "https://github.com/tilln/jmeter-sshmon";

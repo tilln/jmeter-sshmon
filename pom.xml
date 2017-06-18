@@ -88,6 +88,8 @@
                                         <argument>org.apache.sshd.server.SshServer</argument>
                                         <argument>-p</argument>
                                         <argument>${sshmon.sshd.port}</argument>
+                                        <argument>-key-file</argument>
+                                        <argument>${project.basedir}/src/test/resources/hostkey.key</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
