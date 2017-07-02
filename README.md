@@ -6,11 +6,15 @@
 Overview
 --------
 
-Apache JMeter Monitoring plugin for agentless collection and plotting of remote server metrics via SSH connections.
+Apache JMeter monitoring plugin for [agentless collection](https://en.wikipedia.org/wiki/Agentless_data_collection) and plotting of remote server metrics via [SSH connections](https://en.wikipedia.org/wiki/Secure_shell).
 
-The output of remotely executed commands can be plotted over time and/or written to file (CSV/JTL).
+The output of remotely executed commands can be plotted over time and/or written to JTL file (CSV or XML format).
 
 ![SSHMon Samples Collector](https://raw.githubusercontent.com/tilln/jmeter-sshmon/master/docs/sshmon_samples_collector.png)
+
+In contrast to other plugins (such as [PerfMon](https://jmeter-plugins.org/wiki/PerfMon/)), the installation of a custom server agent is not required, just an SSH server and logon credentials.
+
+The impact on the remote server is minimized by establishing a connection only once and reusing it.
 
 This plugin is powered by [JMeter-Plugins](https://jmeter-plugins.org/) components.
 
@@ -43,14 +47,15 @@ Usage
 From the context menu, select "Add" / "Listeners" / "SSHMon Samples Collector".
 
 Add one row for each metric to be collected from a remote command, such as `sar`, `iostat`, `vmstat`, `mpstat` etc.
-**Important:** The command *must* return a single decimal floating point number or it will fail!
-That means commands that return multiple rows and/or columns of console output will have to be filtered accordingly (e.g. via grep, awk, sed etc).
+
+**Important:** The command *must* return a single decimal number (integer or floating point) or it will fail!
+That means commands that return multiple rows and/or columns of console output will have to be filtered accordingly (e.g. via `grep`, `awk`, `sed` etc).
 
 ### Example
 
 |Label|Host|Port|Username|Private Key (PEM)|Password|Command|Delta|
 |-----|----|----|--------|-----------------|--------|-------|-----|
-|CPU%|127.0.0.1|22|jmeter||secret|<code>sar -u 1 1&#124;awk '/^Average:/{print 100-$8}'</code>|☐|
+|CPU%|127.0.0.1|22|jmeter||secret|<code>sar -u 1 1 &#124; awk '/^Average:/{print 100-$8}'</code>|&#x25fb;|
 
 * Connect to localhost on TCP port 22 with username *jmeter* and password *secret*
 * Get CPU utilisation from [`sar`](http://linuxcommand.org/man_pages/sar1.html) (1 sample, 1 second)
