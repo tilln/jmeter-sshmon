@@ -1,4 +1,4 @@
-# jmeter-sshmon [![travis][travis-image]][travis-url]
+# SSHMon Samples Collector [![travis][travis-image]][travis-url]
 
 [travis-image]: https://travis-ci.org/tilln/jmeter-sshmon.svg?branch=master
 [travis-url]: https://travis-ci.org/tilln/jmeter-sshmon
@@ -23,7 +23,7 @@ Installation
 
 ### Via [PluginsManager](https://jmeter-plugins.org/wiki/PluginsManager/)
 
-Under tab "Available Plugins", select "SSHMon Sample Collector", then click "Apply Changes and Restart JMeter".
+Under tab "Available Plugins", select "SSHMon Samples Collector", then click "Apply Changes and Restart JMeter".
 
 ### Via Package from [JMeter-Plugins.org](https://jmeter-plugins.org/)
 
