@@ -53,4 +53,10 @@ public class SSHMonCollector
             samplers.add(new SSHMonSampler(label, connectionDetails, command, isDelta));
         }
     }
+
+    @Override
+    public void testEnded(String host) {
+        super.testEnded(host);
+        SSHMonSampler.clearConnectionPool();
+    }
 }

@@ -17,16 +17,21 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
-    private final JSch jsch = new JSch();
-    private boolean hostKeyValidation = false;
+    private final JSch jsch;
 
     public SSHSessionFactory() {
+        JSch.setLogger(new JSchLogger());
+        jsch = new JSch();
+
+        // Change default from "ask" to avoid interactive confirmation:
+        JSch.setConfig("StrictHostKeyChecking", "no");
+
         String knownHosts = JMeterUtils.getProperty("jmeter.sshmon.knownHosts");
         if (knownHosts != null && !knownHosts.isEmpty()) {
             try {
                 log.debug("known hosts file set to "+knownHosts);
                 jsch.setKnownHosts(knownHosts);
-                hostKeyValidation = true;
+                JSch.setConfig("StrictHostKeyChecking", "yes");
             }
             catch (JSchException e) {
                 log.error("Failed to set known hosts ", e);
@@ -45,9 +50,7 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
             }
             session = jsch.getSession(connectionDetails.getUsername(), connectionDetails.getHost(), connectionDetails.getPort());
             session.setPassword(connectionDetails.getPassword());
-            if (!hostKeyValidation) {
-                session.setConfig("StrictHostKeyChecking", "no");
-            }
+            session.setServerAliveCountMax(Integer.MAX_VALUE); // change from default value 1 to prevent disconnects
             session.setDaemonThread(true);
             session.connect();
         } catch (Exception e) {
@@ -59,7 +62,7 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
 
     @Override
     public PooledObject<Session> wrap(Session session) {
-        return new DefaultPooledObject(session);
+        return new DefaultPooledObject<Session>(session);
     }
 
     @Override
