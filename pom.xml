@@ -4,12 +4,13 @@
     <groupId>co.nz.breakpoint.jmeter</groupId>
     <artifactId>jmeter-sshmon</artifactId>
     <packaging>jar</packaging>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <name>jmeter-sshmon</name>
-    <url>http://maven.apache.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <scm>
@@ -80,7 +81,6 @@
                                     <goal>start</goal>
                                 </goals>
                                 <configuration>
-                                    <skip>true</skip>
                                     <arguments>
                                         <argument>java</argument>
                                         <argument>-cp</argument>
@@ -130,7 +130,7 @@
         <dependency>
             <groupId>kg.apc</groupId>
             <artifactId>jmeter-plugins-cmn-jmeter</artifactId>
-            <version>0.5</version>
+            <version>0.6</version>
         </dependency>
         <dependency>
             <groupId>com.jcraft</groupId>
@@ -140,12 +140,8 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
-            <version>2.4.2</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.5</version>
+            <version>2.6.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>kg.apc</groupId>

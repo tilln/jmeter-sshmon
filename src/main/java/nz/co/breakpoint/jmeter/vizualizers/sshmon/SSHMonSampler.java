@@ -1,11 +1,10 @@
 package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 
-import java.io.InterruptedIOException;
+import java.io.ByteArrayOutputStream;
 
 import kg.apc.jmeter.vizualizers.MonitoringSampler;
 import kg.apc.jmeter.vizualizers.MonitoringSampleGenerator;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.pool2.KeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
@@ -35,10 +34,21 @@ public class SSHMonSampler
      */
     private static KeyedObjectPool<ConnectionDetails, Session> pool;
     static {
-        GenericKeyedObjectPoolConfig config = new GenericKeyedObjectPoolConfig();
+        GenericKeyedObjectPoolConfig<Session> config = new GenericKeyedObjectPoolConfig<>();
         config.setMinIdlePerKey(1);
+        config.setTestOnBorrow(true);
         log.debug("Creating GenericKeyedObjectPool");
         pool = new GenericKeyedObjectPool<ConnectionDetails, Session>(new SSHSessionFactory(), config);
+    }
+
+    public static void clearConnectionPool() {
+        log.debug("Clearing connection pool");
+        try {
+            pool.clear();
+        }
+        catch (Exception e) {
+            log.error("Failed to clear connection pool: ", e);
+        }
     }
 
     public SSHMonSampler(String name, ConnectionDetails connectionDetails, String remoteCommand, boolean sampleDeltaValue) {
@@ -52,6 +62,7 @@ public class SSHMonSampler
     public void generateSamples(MonitoringSampleGenerator collector) {
         Session session = null;
         ChannelExec channel = null;
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
 
         try {
             log.debug("Borrowing session for "+connectionDetails);
@@ -60,10 +71,14 @@ public class SSHMonSampler
             channel = (ChannelExec)session.openChannel("exec");
             channel.setCommand(remoteCommand);
             channel.setPty(true);
+            channel.setOutputStream(result);
             channel.connect();
-            
-            final double val = Double.valueOf(IOUtils.toString(channel.getInputStream()).trim());
 
+            while (!channel.isClosed()) { // wait for command execution to finish
+                Thread.sleep(10);
+            }
+
+            final double val = Double.valueOf(result.toString());
             if (sampleDeltaValue) {
                 if (!Double.isNaN(oldValue)) {
                     collector.generateSample(val - oldValue, metricName);
@@ -73,30 +88,29 @@ public class SSHMonSampler
                 collector.generateSample(val, metricName);
             }
         }
-        catch (InterruptedIOException ex) { // stopping the test has caused a thread interrupt
-            log.info(ex.toString());
+        catch (JSchException ex) {
+            log.error("Channel failure for "+connectionDetails, ex);
         }
-        catch (Exception ex) { 
-            log.error(ex.toString());
+        catch (Exception ex) {
+            log.error("Sample failure for "+connectionDetails, ex);
         }
         finally {
-            if (channel != null && channel.isConnected()) {
+            if (channel != null) {
+                log.debug("Disconnecting channel for "+connectionDetails);
                 channel.disconnect();
             }
-            if (session != null) {
-                try {
-                    if (session.isConnected()) {
-                        log.debug("Returning session for "+connectionDetails);
-                        pool.returnObject(connectionDetails, session);
-                    }
-                    else {
-                        log.debug("Invalidating session for "+connectionDetails);
-                        pool.invalidateObject(connectionDetails, session);
-                    }
+            try {
+                if (session != null && session.isConnected()) {
+                    log.debug("Returning session for "+connectionDetails);
+                    pool.returnObject(connectionDetails, session);
                 }
-                catch (Exception ex) {
-                    log.warn(ex.getMessage());
+                else {
+                    log.debug("Invalidating session for "+connectionDetails);
+                    pool.invalidateObject(connectionDetails, session);
                 }
+            }
+            catch (Exception ex) {
+                log.warn("Failure returning session ", ex);
             }
         }
     }

@@ -33,13 +33,11 @@ Extract the [zip package](https://jmeter-plugins.org/files/packages/tilln-sshmon
 
 1. Copy the [jmeter-sshmon jar file](https://github.com/tilln/jmeter-sshmon/releases/download/1.0/jmeter-sshmon-1.0.jar) into JMeter's lib/ext directory.
 2. Copy the following dependencies into JMeter's lib directory:
-	* [kg.apc / jmeter-plugins-cmn-jmeter](https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-cmn-jmeter/0.5/jmeter-plugins-cmn-jmeter-0.5.jar)
-    * [commons-io / commons-io](https://search.maven.org/remotecontent?filepath=commons-io/commons-io/2.5/commons-io-2.5.jar)
-    * [org.apache.commons / commons-pool](https://search.maven.org/remotecontent?filepath=org/apache/commons/commons-pool2/2.4.2/commons-pool2-2.4.2.jar)
+	* [kg.apc / jmeter-plugins-cmn-jmeter](https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-cmn-jmeter/0.6/jmeter-plugins-cmn-jmeter-0.6.jar)
     * [com.jcraft.jsch / jsch](https://search.maven.org/remotecontent?filepath=com/jcraft/jsch/0.1.54/jsch-0.1.54.jar)
 3. Restart JMeter.
 
-**Important: Make sure to remove any older jar file version than `jmeter-plugins-cmn-jmeter-0.5.jar` from JMeter's lib directory!**
+**Important: Make sure to remove any older jar file version than `jmeter-plugins-cmn-jmeter-0.6.jar` from JMeter's lib directory!**
 
 Usage
 -----
@@ -100,13 +98,21 @@ For details refer to the [JMeter-Plugins wiki](https://jmeter-plugins.org/wiki/S
 ### JMeter Properties
 
 The following properties control the plugin behaviour:
-  * `jmeter.sshmon.knownHosts`: Filename of a known_hosts file containing public keys of trusted remote servers (in OpenSSH format). If not set, no validation will be performed.
-  * `jmeter.sshmon.interval`: Define the metrics collection interval in milliseconds (default=1 second).
-  * `jmeter.sshmon.forceOutputFile` - (true/false) makes sure JMeter writes metrics to CSV file in the current directory if no filename is specified (default=false).
+  * `jmeter.sshmon.knownHosts`: Filename of a known_hosts file containing public keys of trusted remote servers (in OpenSSH format).
+    If defined, connections to unknown hosts will be rejected (via `StrictHostKeyChecking=yes`).
+    If undefined, connections to unknown hosts will be established (via `StrictHostKeyChecking=no`).
+    Default: undefined.
+  * `jmeter.sshmon.interval`: Metrics collection interval in milliseconds.
+    This is inclusive of the execution time of the remote commands.
+    Default: 1 second.
+  * `jmeter.sshmon.forceOutputFile` (true/false): Makes sure JMeter writes metrics to CSV file in the current directory if no filename is specified.
+    Default: false.
 
 Limitations
 -----------
 
-* Samples are collected by a single thread, so if the command takes more than an insignificant amount of time to run, the frequency of sample collection will be limited.
-A separate monitor may be used in this case.
-* The help link on the plugin GUI currently points to an incorrect location. This is to be resolved with the next release of `jmeter-plugins-cmn-jmeter` (see [this PR](https://github.com/undera/jmeter-plugins/pull/162)).
+* Samples are collected by a single thread, so if a command takes more than an insignificant amount of time to run, the frequency of sample collection will be limited.
+Even more so if more than one command is sampled. In this case, use a separate monitor for each sample command.
+* When a JMeter test ends, this plugin will not interrupt the collector thread but let the current sample finish before stopping.
+This may take longer than the JMeter engine [waits](https://jmeter.apache.org/usermanual/get-started.html#shutdown) in headless (non-GUI) mode.
+In this case, increase the JMeter property `jmeter.exit.check.pause`.
