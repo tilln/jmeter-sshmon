@@ -25,6 +25,8 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
 
         // Change default from "ask" to avoid interactive confirmation:
         JSch.setConfig("StrictHostKeyChecking", "no");
+        // Remove Kerberos (https://sourceforge.net/p/jsch/mailman/message/29359265/):
+        JSch.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
 
         String knownHosts = JMeterUtils.getProperty("jmeter.sshmon.knownHosts");
         if (knownHosts != null && !knownHosts.isEmpty()) {
