@@ -107,6 +107,8 @@ The following properties control the plugin behaviour:
     Default: 1 second.
   * `jmeter.sshmon.forceOutputFile` (true/false): Makes sure JMeter writes metrics to CSV file in the current directory if no filename is specified.
     Default: false.
+  * `jmeter.sshmon.locale` (since v1.2; in ISO format, e.g. `en_NZ`): Allows to override the locale for parsing numbers returned from the monitored host, 
+    in case its locale is different from the JVM running the plugin.
 
 Limitations
 -----------

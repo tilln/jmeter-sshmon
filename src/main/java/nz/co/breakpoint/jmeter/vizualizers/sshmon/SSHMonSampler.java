@@ -1,13 +1,17 @@
 package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 
 import java.io.ByteArrayOutputStream;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import kg.apc.jmeter.vizualizers.MonitoringSampler;
 import kg.apc.jmeter.vizualizers.MonitoringSampleGenerator;
 
+import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.pool2.KeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
+import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
@@ -28,6 +32,7 @@ public class SSHMonSampler
     private String remoteCommand;
     private boolean sampleDeltaValue = true;
     private double oldValue = Double.NaN;
+    private NumberFormat numberFormat = NumberFormat.getInstance(LocaleUtils.toLocale(JMeterUtils.getPropDefault("jmeter.sshmon.locale", Locale.getDefault().toString())));
 
     /**
      * Manage ssh connections and share existing connections
@@ -78,7 +83,7 @@ public class SSHMonSampler
                 Thread.sleep(10);
             }
 
-            final double val = Double.valueOf(result.toString());
+            final double val = numberFormat.parse(result.toString()).doubleValue();
             if (sampleDeltaValue) {
                 if (!Double.isNaN(oldValue)) {
                     collector.generateSample(val - oldValue, metricName);
