@@ -34,7 +34,8 @@ Extract the [zip package](https://jmeter-plugins.org/files/packages/tilln-sshmon
 1. Copy the [jmeter-sshmon jar file](https://github.com/tilln/jmeter-sshmon/releases/download/1.2/jmeter-sshmon-1.2.jar) into JMeter's lib/ext directory.
 2. Copy the following dependencies into JMeter's lib directory:
 	* [kg.apc / jmeter-plugins-cmn-jmeter](https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-cmn-jmeter/0.6/jmeter-plugins-cmn-jmeter-0.6.jar)
-    * [com.jcraft.jsch / jsch](https://search.maven.org/remotecontent?filepath=com/jcraft/jsch/0.1.54/jsch-0.1.54.jar)
+    * [org.apache.sshd / sshd-core](https://search.maven.org/remotecontent?filepath=org/apache/sshd/sshd-core/2.4.0/sshd-core-2.4.0.jar)
+    * [org.apache.sshd / sshd-common](https://search.maven.org/remotecontent?filepath=org/apache/sshd/sshd-common/2.4.0/sshd-common-2.4.0.jar)
 3. Restart JMeter.
 
 **Important: Make sure to remove any older jar file version than `jmeter-plugins-cmn-jmeter-0.6.jar` from JMeter's lib directory!**

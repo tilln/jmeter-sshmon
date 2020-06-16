@@ -2,6 +2,9 @@ package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.apache.sshd.server.auth.password.AcceptAllPasswordAuthenticator;
 import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
@@ -31,11 +34,10 @@ public class SSHServerResource implements Runnable {
         if (sshd != null) return;
         sshd = SshServer.setUpDefaultServer();
         sshd.setPort(getPort());         
-        sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(new File("src/test/resources/hostkey.key")));
+        sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(Paths.get(new File("src/test/resources/hostkey.key").getPath())));
         sshd.setPasswordAuthenticator(AcceptAllPasswordAuthenticator.INSTANCE);
         sshd.setShellFactory(InteractiveProcessShellFactory.INSTANCE);
         sshd.setPublickeyAuthenticator(AcceptAllPublickeyAuthenticator.INSTANCE);
-        sshd.setTcpipForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
         try {
             System.out.println("sshd.start()");
             sshd.start();

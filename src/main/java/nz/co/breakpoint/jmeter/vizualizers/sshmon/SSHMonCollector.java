@@ -55,8 +55,16 @@ public class SSHMonCollector
     }
 
     @Override
+    public void testStarted(String host) {
+        super.testStarted(host);
+        SSHMonSampler.init();
+    }
+
+    @Override
     public void testEnded(String host) {
         super.testEnded(host);
-        SSHMonSampler.clearConnectionPool();
+        SSHMonSampler.closeConnectionPool();
+//        https://github.com/apache/jmeter/blob/4e90a0d9d610dba3050da712677be2d18cb80d46/src/core/src/main/java/org/apache/jmeter/reporters/ResultCollector.java#L317
+//        https://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html#addShutdownHook(java.lang.Thread)
     }
 }

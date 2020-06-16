@@ -6,55 +6,64 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import org.apache.sshd.client.ClientFactoryManager;
+import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
+import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
+import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.PropertyResolverUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.KeyPair;
 
 /**
  * Factory class that manages SSH sessions for Apache Commons connection pool.
  */
-public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDetails, Session> {
+public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDetails, ClientSession> {
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
-    private final JSch jsch;
+    private final SshClient sshc;
 
     public SSHSessionFactory() {
-        JSch.setLogger(new JSchLogger());
-        jsch = new JSch();
-
-        // Change default from "ask" to avoid interactive confirmation:
-        JSch.setConfig("StrictHostKeyChecking", "no");
-        // Remove Kerberos (https://sourceforge.net/p/jsch/mailman/message/29359265/):
-        JSch.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
+        sshc = SshClient.setUpDefaultClient();
+        sshc.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
 
         String knownHosts = JMeterUtils.getProperty("jmeter.sshmon.knownHosts");
         if (knownHosts != null && !knownHosts.isEmpty()) {
-            try {
-                log.debug("known hosts file set to "+knownHosts);
-                jsch.setKnownHosts(knownHosts);
-                JSch.setConfig("StrictHostKeyChecking", "yes");
-            }
-            catch (JSchException e) {
-                log.error("Failed to set known hosts ", e);
-            }
+            log.debug("known hosts file set to "+knownHosts);
+//            KnownHostsServerKeyVerifier.KNOWN_HOSTS_FILE_OPTION;
+            KnownHostsServerKeyVerifier khv = new KnownHostsServerKeyVerifier(null, Paths.get(new File(knownHosts).getPath())); // TODO
+//            sshc.setServerKeyVerifier(khv);
         }
+        // SSH_MSG_KEXINIT message sending is automatically delayed until after the server's identification is received:
+        PropertyResolverUtils.updateProperty(sshc, ClientFactoryManager.SEND_IMMEDIATE_KEXINIT, false);
+        sshc.start();
     }
 
     @Override
-    public Session create(ConnectionDetails connectionDetails) throws Exception {
+    public ClientSession create(ConnectionDetails connectionDetails) throws Exception {
         log.debug("Creating session for "+connectionDetails);
-        Session session = null;
+        ClientSession session = null;
         try {
+            session = sshc.connect(connectionDetails.getUsername(), connectionDetails.getHost(), connectionDetails.getPort())
+                    .verify()
+                    .getClientSession();
+
             byte[] privateKey = connectionDetails.getPrivateKey();
+            String password = connectionDetails.getPassword();
+
             if (privateKey != null) {
-                jsch.addIdentity(connectionDetails.getUsername(), privateKey, null, connectionDetails.getPassword().getBytes());
+                KeyPair keyPair = KeyHelper.pemToKeyPair(privateKey, password);
+                session.addPublicKeyIdentity(keyPair);
+            } else {
+                if (password != null && !password.isEmpty()) {
+                    session.addPasswordIdentity(password);
+                }
             }
-            session = jsch.getSession(connectionDetails.getUsername(), connectionDetails.getHost(), connectionDetails.getPort());
-            session.setPassword(connectionDetails.getPassword());
-            session.setServerAliveCountMax(Integer.MAX_VALUE); // change from default value 1 to prevent disconnects
-            session.setDaemonThread(true);
-            session.connect();
+            session.auth().verify();
         } catch (Exception e) {
             log.error("Failed to connect to "+connectionDetails);
             throw e;
@@ -63,25 +72,29 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
     }
 
     @Override
-    public PooledObject<Session> wrap(Session session) {
-        return new DefaultPooledObject<Session>(session);
+    public PooledObject<ClientSession> wrap(ClientSession session) {
+        return new DefaultPooledObject<ClientSession>(session);
     }
 
     @Override
-    public void destroyObject(ConnectionDetails connectionDetails, PooledObject<Session> sessionObject) {
+    public void destroyObject(ConnectionDetails connectionDetails, PooledObject<ClientSession> sessionObject) {
         log.debug("Destroying session for "+connectionDetails);
         if (sessionObject != null) {
-            Session session = sessionObject.getObject();
+            ClientSession session = sessionObject.getObject();
             if (session != null) {
-                session.disconnect();
+                try {
+                    session.close();
+                } catch (IOException e) {
+                    log.error("Failed to close connection "+connectionDetails);
+                }
             }
         }
     }
 
     @Override
-    public boolean validateObject(ConnectionDetails connectionDetails, PooledObject<Session> sessionObject) {
+    public boolean validateObject(ConnectionDetails connectionDetails, PooledObject<ClientSession> sessionObject) {
         log.debug("Validating session for "+connectionDetails);
-        Session session = (sessionObject == null) ? null : sessionObject.getObject();
-        return session != null && session.isConnected();
+        ClientSession session = (sessionObject == null) ? null : sessionObject.getObject();
+        return session != null && session.isOpen();
     }
 }

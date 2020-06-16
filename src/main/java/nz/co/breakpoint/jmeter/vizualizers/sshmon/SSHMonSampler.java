@@ -2,22 +2,17 @@ package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 
 import java.io.ByteArrayOutputStream;
 import java.text.NumberFormat;
+import java.util.EnumSet;
 import java.util.Locale;
-
 import kg.apc.jmeter.vizualizers.MonitoringSampler;
 import kg.apc.jmeter.vizualizers.MonitoringSampleGenerator;
-
 import org.apache.commons.lang3.LocaleUtils;
-import org.apache.commons.pool2.KeyedObjectPool;
-import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
-import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import org.apache.sshd.client.channel.ChannelExec;
+import org.apache.sshd.client.channel.ClientChannelEvent;
+import org.apache.sshd.client.session.ClientSession;
 
 /**
  * Monitoring sampler that collects the numeric output of a remote command 
@@ -37,22 +32,21 @@ public class SSHMonSampler
     /**
      * Manage ssh connections and share existing connections
      */
-    private static KeyedObjectPool<ConnectionDetails, Session> pool;
-    static {
-        GenericKeyedObjectPoolConfig<Session> config = new GenericKeyedObjectPoolConfig<>();
-        config.setMinIdlePerKey(1);
-        config.setTestOnBorrow(true);
-        log.debug("Creating GenericKeyedObjectPool");
-        pool = new GenericKeyedObjectPool<ConnectionDetails, Session>(new SSHSessionFactory(), config);
+    private static SSHConnectionPool pool;
+
+    public static void init() {
+        log.debug("Opening connection pool");
+        pool = SSHConnectionPool.createInstance();
+        SecurityProviderLoader.addJceProvider(JMeterUtils.getPropDefault("jmeter.sshmon.jceprovider", "org.bouncycastle.jce.provider.BouncyCastleProvider"));
     }
 
-    public static void clearConnectionPool() {
-        log.debug("Clearing connection pool");
+    public static void closeConnectionPool() {
+        log.debug("Closing connection pool");
         try {
-            pool.clear();
+            pool.close();
         }
         catch (Exception e) {
-            log.error("Failed to clear connection pool: ", e);
+            log.error("Failed to close connection pool: ", e);
         }
     }
 
@@ -65,22 +59,18 @@ public class SSHMonSampler
 
     @Override
     public void generateSamples(MonitoringSampleGenerator collector) {
-        Session session = null;
-        ChannelExec channel = null;
+        ClientSession session = null; // https://github.com/apache/mina-sshd/blob/master/docs/client-setup.md#keeping-the-session-alive-while-no-traffic
         ByteArrayOutputStream result = new ByteArrayOutputStream();
 
         try {
             log.debug("Borrowing session for "+connectionDetails);
             session = pool.borrowObject(connectionDetails);
 
-            channel = (ChannelExec)session.openChannel("exec");
-            channel.setCommand(remoteCommand);
-            channel.setPty(true);
-            channel.setOutputStream(result);
-            channel.connect();
-
-            while (!channel.isClosed()) { // wait for command execution to finish
-                Thread.sleep(10);
+            try (ChannelExec channel = session.createExecChannel(remoteCommand, null,null)) { // TODO
+                channel.setUsePty(true);
+                channel.setOut(result);
+                channel.open();
+                channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 1000L);  // wait for command execution to finish
             }
 
             final double val = numberFormat.parse(result.toString()).doubleValue();
@@ -93,25 +83,19 @@ public class SSHMonSampler
                 collector.generateSample(val, metricName);
             }
         }
-        catch (JSchException ex) {
-            log.error("Channel failure for "+connectionDetails, ex);
-        }
         catch (Exception ex) {
             log.error("Sample failure for "+connectionDetails, ex);
         }
         finally {
-            if (channel != null) {
-                log.debug("Disconnecting channel for "+connectionDetails);
-                channel.disconnect();
-            }
             try {
-                if (session != null && session.isConnected()) {
-                    log.debug("Returning session for "+connectionDetails);
-                    pool.returnObject(connectionDetails, session);
-                }
-                else {
-                    log.debug("Invalidating session for "+connectionDetails);
-                    pool.invalidateObject(connectionDetails, session);
+                if (session != null) {
+                    if (session.isOpen()) {
+                        log.debug("Returning session for " + connectionDetails);
+                        pool.returnObject(connectionDetails, session);
+                    } else {
+                        log.debug("Invalidating session for " + connectionDetails);
+                        pool.invalidateObject(connectionDetails, session);
+                    }
                 }
             }
             catch (Exception ex) {
