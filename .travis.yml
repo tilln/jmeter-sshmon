@@ -1,4 +1,6 @@
 language: java
+jdk:
+- openjdk8
 before_install:
 - rm -rf target
 script: "mvn verify -B"
