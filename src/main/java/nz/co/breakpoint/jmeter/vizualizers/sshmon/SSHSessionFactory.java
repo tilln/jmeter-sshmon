@@ -39,6 +39,10 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
         sshc.start();
     }
 
+    public void stopClient() {
+        sshc.stop();
+    }
+
     @Override
     public ClientSession create(ConnectionDetails connectionDetails) throws Exception {
         log.debug("Creating session for "+connectionDetails);
@@ -91,6 +95,6 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
     public boolean validateObject(ConnectionDetails connectionDetails, PooledObject<ClientSession> sessionObject) {
         log.debug("Validating session for "+connectionDetails);
         ClientSession session = (sessionObject == null) ? null : sessionObject.getObject();
-        return session != null && session.isOpen();
+        return session != null && session.isAuthenticated();
     }
 }

@@ -59,33 +59,32 @@ public class SSHMonSampler
 
     @Override
     public void generateSamples(MonitoringSampleGenerator collector) {
-        ClientSession session = null; // https://github.com/apache/mina-sshd/blob/master/docs/client-setup.md#keeping-the-session-alive-while-no-traffic
+        ClientSession session = null;
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         String remoteCommand = getRemoteCommand();
-        String metricName = getMetricName();
         ConnectionDetails connectionDetails = getConnectionDetails();
 
         try {
             log.debug("Borrowing session for "+connectionDetails);
             session = pool.borrowObject(connectionDetails);
 
-            try (ChannelExec channel = session.createExecChannel(remoteCommand, null,null)) { // TODO
-                channel.setUsePty(true);
+            try (ChannelExec channel = session.createExecChannel(remoteCommand)) {
+                channel.setUsePty(true); // some commands won't run otherwise
                 channel.setOut(result);
-                channel.open();
+                channel.open().await();
                 channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), getCommandTimeout());  // wait for command execution to finish
             }
-            String resultString = result.toString().trim();
+            String resultString = result.toString().trim(); // numbers only, so Charset should not matter
             log.debug("Result of ("+remoteCommand+"): ["+resultString+"]");
 
             final double val = getNumberFormat().parse(resultString).doubleValue();
             if (isSampleDeltaValue()) {
                 if (!Double.isNaN(getOldValue())) {
-                    collector.generateSample(val - getOldValue(), metricName);
+                    collector.generateSample(val - getOldValue(), getMetricName());
                 }
                 setOldValue(val);
             } else {
-                collector.generateSample(val, metricName);
+                collector.generateSample(val, getMetricName());
             }
         }
         catch (Exception ex) {
@@ -94,7 +93,7 @@ public class SSHMonSampler
         finally {
             try {
                 if (session != null) {
-                    if (session.isOpen()) {
+                    if (session.isAuthenticated()) {
                         log.debug("Returning session for " + connectionDetails);
                         pool.returnObject(connectionDetails, session);
                     } else {
@@ -149,9 +148,15 @@ public class SSHMonSampler
         this.oldValue = oldValue;
     }
 
-    public NumberFormat getNumberFormat() { return numberFormat; }
+    public NumberFormat getNumberFormat() {
+        return numberFormat;
+    }
 
-    public void setNumberFormat(NumberFormat numberFormat) { this.numberFormat = numberFormat; }
+    public void setNumberFormat(NumberFormat numberFormat) {
+        this.numberFormat = numberFormat;
+    }
 
-    public long getCommandTimeout() { return JMeterUtils.getPropDefault("jmeter.sshmon.commandTimeout", 10000L); }
+    public long getCommandTimeout() {
+        return JMeterUtils.getPropDefault("jmeter.sshmon.commandTimeout", 10000L);
+    }
 }
