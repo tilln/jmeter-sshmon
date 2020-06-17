@@ -7,6 +7,7 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.config.hosts.ConfigFileHostEntryResolver;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.RejectAllServerKeyVerifier;
@@ -30,6 +31,12 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
         sshc = SshClient.setUpDefaultClient();
         sshc.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
 
+        String sshConfig = JMeterUtils.getProperty("jmeter.sshmon.sshConfig");
+        if (sshConfig != null && !sshConfig.isEmpty()) {
+            log.debug("ssh config file set to "+sshConfig);
+            ConfigFileHostEntryResolver configResolver = new ConfigFileHostEntryResolver(Paths.get(sshConfig));
+            sshc.setHostConfigEntryResolver(configResolver);
+        }
         String knownHosts = JMeterUtils.getProperty("jmeter.sshmon.knownHosts");
         if (knownHosts != null && !knownHosts.isEmpty()) {
             log.debug("known hosts file set to "+knownHosts);
