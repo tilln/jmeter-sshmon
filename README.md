@@ -119,3 +119,9 @@ Even more so if more than one command is sampled. In this case, use a separate m
 * When a JMeter test ends, this plugin will not interrupt the collector thread but let the current sample finish before stopping.
 This may take longer than the JMeter engine [waits](https://jmeter.apache.org/usermanual/get-started.html#shutdown) in headless (non-GUI) mode.
 In this case, increase the JMeter property `jmeter.exit.check.pause`.
+* Cryptographic algorithms used by SSH for key exchange, signature and encryption are negotiated between client and server 
+when a session is established. The algorithms supported by the client are determined by the Java platform's Security Provider(s).
+The default implementation Java Cryptography Extension (JCE) does not support all modern algorithms (e.g. Ed25519)
+and not all key strength without the [JCE Unlimited Strength Policy](https://www.oracle.com/java/technologies/javase-jce-all-downloads.html).
+Alternative provider can be used to overcome this limitation, such as [BouncyCastle](https://www.bouncycastle.org/)
+or [EdDSA](https://github.com/str4d/ed25519-java), by simply placing their jar file in JMeter's lib directory.

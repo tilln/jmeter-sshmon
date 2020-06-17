@@ -55,12 +55,6 @@ public class SSHMonCollector
     }
 
     @Override
-    public void testStarted(String host) {
-        super.testStarted(host);
-        SSHMonSampler.init();
-    }
-
-    @Override
     public void testEnded(String host) {
         super.testEnded(host);
         SSHMonSampler.closeConnectionPool();

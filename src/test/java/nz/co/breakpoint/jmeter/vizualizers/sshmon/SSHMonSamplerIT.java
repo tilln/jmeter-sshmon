@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
  * (currently via process-exec-maven-plugin)
  */
 public class SSHMonSamplerIT {
-    public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0", Integer.valueOf(System.getProperty("sshmon.sshd.port")));
+    public static ConnectionDetails localConnection = SSHSessionFactoryIT.localConnection;
 
     public class MockSampleGenerator implements MonitoringSampleGenerator {
         protected String metric = "";

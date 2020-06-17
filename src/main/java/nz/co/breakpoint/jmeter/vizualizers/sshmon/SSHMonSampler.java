@@ -37,7 +37,6 @@ public class SSHMonSampler
     public static void init() {
         log.debug("Opening connection pool");
         pool = SSHConnectionPool.createInstance();
-        SecurityProviderLoader.addJceProvider(JMeterUtils.getPropDefault("jmeter.sshmon.jceprovider", "org.bouncycastle.jce.provider.BouncyCastleProvider"));
     }
 
     public static void closeConnectionPool() {
@@ -55,12 +54,16 @@ public class SSHMonSampler
         this.connectionDetails = connectionDetails;
         this.remoteCommand = remoteCommand;
         this.sampleDeltaValue = sampleDeltaValue;
+        init();
     }
 
     @Override
     public void generateSamples(MonitoringSampleGenerator collector) {
         ClientSession session = null; // https://github.com/apache/mina-sshd/blob/master/docs/client-setup.md#keeping-the-session-alive-while-no-traffic
         ByteArrayOutputStream result = new ByteArrayOutputStream();
+        String remoteCommand = getRemoteCommand();
+        String metricName = getMetricName();
+        ConnectionDetails connectionDetails = getConnectionDetails();
 
         try {
             log.debug("Borrowing session for "+connectionDetails);
@@ -70,21 +73,23 @@ public class SSHMonSampler
                 channel.setUsePty(true);
                 channel.setOut(result);
                 channel.open();
-                channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 1000L);  // wait for command execution to finish
+                channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), getCommandTimeout());  // wait for command execution to finish
             }
+            String resultString = result.toString().trim();
+            log.debug("Result of ("+remoteCommand+"): ["+resultString+"]");
 
-            final double val = numberFormat.parse(result.toString()).doubleValue();
-            if (sampleDeltaValue) {
-                if (!Double.isNaN(oldValue)) {
-                    collector.generateSample(val - oldValue, metricName);
+            final double val = getNumberFormat().parse(resultString).doubleValue();
+            if (isSampleDeltaValue()) {
+                if (!Double.isNaN(getOldValue())) {
+                    collector.generateSample(val - getOldValue(), metricName);
                 }
-                oldValue = val;
+                setOldValue(val);
             } else {
                 collector.generateSample(val, metricName);
             }
         }
         catch (Exception ex) {
-            log.error("Sample failure for "+connectionDetails, ex);
+            log.error("Sample failure for "+connectionDetails+" ["+remoteCommand+"]", ex);
         }
         finally {
             try {
@@ -143,4 +148,10 @@ public class SSHMonSampler
     public void setOldValue(double oldValue) {
         this.oldValue = oldValue;
     }
+
+    public NumberFormat getNumberFormat() { return numberFormat; }
+
+    public void setNumberFormat(NumberFormat numberFormat) { this.numberFormat = numberFormat; }
+
+    public long getCommandTimeout() { return JMeterUtils.getPropDefault("jmeter.sshmon.commandTimeout", 10000L); }
 }

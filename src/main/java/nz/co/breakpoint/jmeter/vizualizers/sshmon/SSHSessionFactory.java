@@ -6,12 +6,11 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
+import org.apache.sshd.client.keyverifier.RejectAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
-import org.apache.sshd.common.PropertyResolverUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,12 +33,9 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
         String knownHosts = JMeterUtils.getProperty("jmeter.sshmon.knownHosts");
         if (knownHosts != null && !knownHosts.isEmpty()) {
             log.debug("known hosts file set to "+knownHosts);
-//            KnownHostsServerKeyVerifier.KNOWN_HOSTS_FILE_OPTION;
-            KnownHostsServerKeyVerifier khv = new KnownHostsServerKeyVerifier(null, Paths.get(new File(knownHosts).getPath())); // TODO
-//            sshc.setServerKeyVerifier(khv);
+            sshc.setServerKeyVerifier(new KnownHostsServerKeyVerifier(RejectAllServerKeyVerifier.INSTANCE,
+                Paths.get(new File(knownHosts).getPath())));
         }
-        // SSH_MSG_KEXINIT message sending is automatically delayed until after the server's identification is received:
-        PropertyResolverUtils.updateProperty(sshc, ClientFactoryManager.SEND_IMMEDIATE_KEXINIT, false);
         sshc.start();
     }
 
@@ -73,7 +69,7 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
 
     @Override
     public PooledObject<ClientSession> wrap(ClientSession session) {
-        return new DefaultPooledObject<ClientSession>(session);
+        return new DefaultPooledObject<>(session);
     }
 
     @Override

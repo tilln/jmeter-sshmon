@@ -7,22 +7,18 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.sshd.client.future.AuthFuture;
 import org.apache.sshd.client.session.AbstractClientSession;
 import org.apache.sshd.client.session.ClientSessionImpl;
+import org.apache.sshd.common.SshException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.apache.sshd.client.session.ClientSession;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 public class SSHSessionFactoryIT {
-    public static ConnectionDetails localConnection = new ConnectionDetails("127.0.0.1", Integer.valueOf(System.getProperty("sshmon.sshd.port")));
+    public static ConnectionDetails localConnection = new ConnectionDetails("dummy",
+        "localhost", Integer.valueOf(System.getProperty("sshmon.sshd.port")), "dummy");
     public SSHSessionFactory instance;
     public ClientSession session;
 
@@ -48,15 +44,15 @@ public class SSHSessionFactoryIT {
     @Test
     public void testCreateNoHostValidation() throws Exception {
         session = instance.create(localConnection);
-        assertTrue(session.isOpen());
+        assertTrue(session.isAuthenticated());
     }
 
-    @Test//(expected=Exception.class)
+    @Test(expected=SshException.class)
     public void testCreateFailedHostValidation() throws Exception {
         JMeterUtils.setProperty("jmeter.sshmon.knownHosts", "src/test/resources/failed_known_hosts");
         instance = new SSHSessionFactory();
         session = instance.create(localConnection);
-        assertFalse(session.isOpen());
+        assertFalse(session.isAuthenticated());
     }
 
     @Test
@@ -64,7 +60,7 @@ public class SSHSessionFactoryIT {
         JMeterUtils.setProperty("jmeter.sshmon.knownHosts", "src/test/resources/known_hosts");
         instance = new SSHSessionFactory();
         session = instance.create(localConnection);
-        assertTrue(session.isOpen());
+        assertTrue(session.isAuthenticated());
     }
 
     @Test
