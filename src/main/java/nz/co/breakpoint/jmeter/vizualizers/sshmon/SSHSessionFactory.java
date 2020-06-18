@@ -8,10 +8,12 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.config.hosts.ConfigFileHostEntryResolver;
+import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.RejectAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.config.keys.FilePasswordProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,13 +31,23 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
 
     public SSHSessionFactory() {
         sshc = SshClient.setUpDefaultClient();
+        // for plugin backward compatibility, ignore known hosts and ssh config (unless explicitly configured):
         sshc.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
+        sshc.setHostConfigEntryResolver(HostConfigEntryResolver.EMPTY);
 
         String sshConfig = JMeterUtils.getProperty("jmeter.sshmon.sshConfig");
         if (sshConfig != null && !sshConfig.isEmpty()) {
             log.debug("ssh config file set to "+sshConfig);
             ConfigFileHostEntryResolver configResolver = new ConfigFileHostEntryResolver(Paths.get(sshConfig));
             sshc.setHostConfigEntryResolver(configResolver);
+        }
+        /* sshConfig may reference encrypted keys that require a password;
+         * however configuring this via filename/password pairs is rather over the top, so assuming the common
+         * use case of a single user with one identity file, a single password can be provided: */
+        String identityPassword = JMeterUtils.getProperty("jmeter.sshmon.identityPassword");
+        if (identityPassword != null && !identityPassword.isEmpty()) {
+            log.debug("identity file password set to "+identityPassword);
+            sshc.setFilePasswordProvider(FilePasswordProvider.of(identityPassword));
         }
         String knownHosts = JMeterUtils.getProperty("jmeter.sshmon.knownHosts");
         if (knownHosts != null && !knownHosts.isEmpty()) {
@@ -59,11 +71,11 @@ public class SSHSessionFactory extends BaseKeyedPooledObjectFactory<ConnectionDe
                     .verify()
                     .getClientSession();
 
-            byte[] privateKey = connectionDetails.getPrivateKey();
+            String privateKey = connectionDetails.getPrivateKey();
             String password = connectionDetails.getPassword();
 
-            if (privateKey != null) {
-                KeyPair keyPair = KeyHelper.pemToKeyPair(privateKey, password);
+            if (privateKey != null && !privateKey.isEmpty()) {
+                KeyPair keyPair = KeyHelper.toKeyPair(privateKey, password);
                 session.addPublicKeyIdentity(keyPair);
             } else {
                 if (password != null && !password.isEmpty()) {

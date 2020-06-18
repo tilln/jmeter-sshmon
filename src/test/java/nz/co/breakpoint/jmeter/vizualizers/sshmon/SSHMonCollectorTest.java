@@ -40,17 +40,18 @@ public class SSHMonCollectorTest {
         
         instance.initiateConnectors();
 
-        assertEquals(instance.getSamplers().size(), 1);
+        assertEquals(1, instance.getSamplers().size());
         
         SSHMonSampler sampler = (SSHMonSampler)instance.getSamplers().get(0);
-        assertEquals(sampler.getMetricName(), dataModel.getValueAt(0, 0));
-        assertEquals(sampler.getConnectionDetails(), new ConnectionDetails(
-            (String)dataModel.getValueAt(0, 3), // username
-            (String)dataModel.getValueAt(0, 1), // host
-            (Integer)dataModel.getValueAt(0, 2), // port
-            (String)dataModel.getValueAt(0, 5), // password
-            ((String)dataModel.getValueAt(0, 4)).getBytes())); // privateKey
-        assertEquals(sampler.getRemoteCommand(), dataModel.getValueAt(0, 6));
-        assertEquals(sampler.isSampleDeltaValue(), dataModel.getValueAt(0, 7));
+        assertEquals(dataModel.getValueAt(0, 0), sampler.getMetricName());
+        assertEquals(new ConnectionDetails(
+                (String)dataModel.getValueAt(0, 3), // username
+                (String)dataModel.getValueAt(0, 1), // host
+                (Integer)dataModel.getValueAt(0, 2), // port
+                (String)dataModel.getValueAt(0, 5), // password
+                ((String)dataModel.getValueAt(0, 4))), // privateKey
+            sampler.getConnectionDetails());
+        assertEquals(dataModel.getValueAt(0, 6), sampler.getRemoteCommand());
+        assertEquals(dataModel.getValueAt(0, 7), sampler.isSampleDeltaValue());
     }
 }

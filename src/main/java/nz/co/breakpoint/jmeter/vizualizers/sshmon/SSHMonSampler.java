@@ -2,7 +2,6 @@ package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 
 import java.io.ByteArrayOutputStream;
 import java.text.NumberFormat;
-import java.util.EnumSet;
 import java.util.Locale;
 import kg.apc.jmeter.vizualizers.MonitoringSampler;
 import kg.apc.jmeter.vizualizers.MonitoringSampleGenerator;
@@ -10,8 +9,6 @@ import org.apache.commons.lang3.LocaleUtils;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-import org.apache.sshd.client.channel.ChannelExec;
-import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.session.ClientSession;
 
 /**
@@ -60,22 +57,16 @@ public class SSHMonSampler
     @Override
     public void generateSamples(MonitoringSampleGenerator collector) {
         ClientSession session = null;
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        String remoteCommand = getRemoteCommand();
-        ConnectionDetails connectionDetails = getConnectionDetails();
+        final ByteArrayOutputStream result = new ByteArrayOutputStream();
+        final String remoteCommand = getRemoteCommand();
+        final ConnectionDetails connectionDetails = getConnectionDetails();
 
         try {
             log.debug("Borrowing session for "+connectionDetails);
             session = pool.borrowObject(connectionDetails);
 
-            try (ChannelExec channel = session.createExecChannel(remoteCommand)) {
-                channel.setUsePty(true); // some commands won't run otherwise
-                channel.setOut(result);
-                channel.open().await();
-                channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), getCommandTimeout());  // wait for command execution to finish
-            }
-            String resultString = result.toString().trim(); // numbers only, so Charset should not matter
-            log.debug("Result of ("+remoteCommand+"): ["+resultString+"]");
+            String resultString = session.executeRemoteCommand(remoteCommand, null, null); // numbers only, so Charset should not matter
+            log.debug("Result of ["+remoteCommand+"] on "+connectionDetails+"'"+resultString+"'");
 
             final double val = getNumberFormat().parse(resultString).doubleValue();
             if (isSampleDeltaValue()) {

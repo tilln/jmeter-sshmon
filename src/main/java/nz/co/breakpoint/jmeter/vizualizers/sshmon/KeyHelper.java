@@ -1,39 +1,34 @@
 package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 
-import org.apache.sshd.common.config.keys.KeyUtils;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
+import org.apache.sshd.common.NamedResource;
+import org.apache.sshd.common.config.keys.FilePasswordProvider;
 import org.apache.sshd.common.config.keys.loader.pem.PEMResourceParserUtils;
-import org.apache.sshd.common.config.keys.loader.pem.RSAPEMResourceKeyPairParser;
-import org.apache.sshd.common.util.security.SecurityUtils;
-
-import javax.crypto.EncryptedPrivateKeyInfo;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.*;
-import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPublicKeySpec;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
 
-// TODO check out PEMResourceParserUtils
+import java.util.Arrays;
+import java.util.List;
+
+// TODO unit tests
 public class KeyHelper {
 
-    public static KeyPair pemToKeyPair(byte[] keyBytes, String password) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, InvalidKeyException {
-//        return RSAPEMResourceKeyPairParser.decodeRSAKeyPair(SecurityUtils.getKeyFactory(KeyUtils.RSA_ALGORITHM),
-//                new ByteArrayInputStream(keyBytes), true);
-        KeyFactory rsaKeyFactory = KeyFactory.getInstance("RSA");
-        EncryptedPrivateKeyInfo pkInfo = new EncryptedPrivateKeyInfo(keyBytes);
-        PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray());
+    private static final Logger log = LoggingManager.getLoggerForClass();
 
-        SecretKeyFactory pbeKeyFactory = SecretKeyFactory.getInstance(pkInfo.getAlgName());
-        PKCS8EncodedKeySpec encodedKeySpec = pkInfo.getKeySpec(pbeKeyFactory.generateSecret(keySpec));
-
-        PrivateKey privateKey = rsaKeyFactory.generatePrivate(encodedKeySpec);
-        PublicKey publicKey = rsaKeyFactory.generatePublic(new RSAPublicKeySpec(
-                ((RSAPrivateCrtKey) privateKey).getModulus(),
-                ((RSAPrivateCrtKey) privateKey).getPublicExponent()));
-
-        return new KeyPair(publicKey, privateKey);
+    public static KeyPair toKeyPair(String privateKey, String password) throws IOException {
+        final NamedResource dummy = NamedResource.ofName("");
+        final List<String> lines = Arrays.asList(privateKey.split("\n"));
+        log.debug("Extracting key pair from ["+lines+"]");
+        try {
+            if (PEMResourceParserUtils.PROXY.canExtractKeyPairs(dummy, lines)) {
+                return PEMResourceParserUtils.PROXY.loadKeyPairs(null, dummy, FilePasswordProvider.of(password), lines).iterator().next();
+            }
+            log.error("Unsupported private key format '"+privateKey+"'");
+        } catch (GeneralSecurityException e) {
+            log.error("Failed to process private key '"+privateKey+"'", e);
+        }
+        return null;
     }
 }

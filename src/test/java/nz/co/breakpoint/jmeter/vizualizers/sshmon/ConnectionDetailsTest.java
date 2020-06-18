@@ -24,7 +24,7 @@ public class ConnectionDetailsTest {
                      new ConnectionDetails("username", "host", "otherpassword"));
 
         assertEquals(new ConnectionDetails("username", "host", 22, "password"),
-                     new ConnectionDetails("username", "host", 22, "password", new byte[]{1,2,3}));
+                     new ConnectionDetails("username", "host", 22, "password", "somekey"));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class ConnectionDetailsTest {
                      new ConnectionDetails("username", "HOST", "otherpassword").hashCode());
 
         assertEquals(new ConnectionDetails("username", "host", 22, "password").hashCode(),
-                     new ConnectionDetails("username", "host", 22, "password", new byte[]{1,2,3}).hashCode());
+                     new ConnectionDetails("username", "host", 22, "password", "somekey").hashCode());
     }
 
     @Test
@@ -80,7 +80,7 @@ public class ConnectionDetailsTest {
         assertEquals(new ConnectionDetails("username", "host", 123, "password").toString(),
             "username@host:123");
 
-        assertEquals(new ConnectionDetails("username", "host", 123, "password", new byte[]{1,2,3}).toString(),
+        assertEquals(new ConnectionDetails("username", "host", 123, "password", "somekey").toString(),
             "username@host:123");
     }
 }
