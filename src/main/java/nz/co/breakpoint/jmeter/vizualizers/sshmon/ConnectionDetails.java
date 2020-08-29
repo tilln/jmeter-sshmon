@@ -15,7 +15,7 @@ public class ConnectionDetails {
     protected final int port;
     protected final String username;
     protected final String password;
-    protected final byte[] privateKey;
+    protected final String privateKey;
 
     public ConnectionDetails(String host) {
         this("", host);
@@ -41,7 +41,7 @@ public class ConnectionDetails {
         this(username, host, port, password, null);
     }
 
-    public ConnectionDetails(String username, String host, int port, String password, byte[] privateKey) {
+    public ConnectionDetails(String username, String host, int port, String password, String privateKey) {
         this.username = username;
         this.host = host;
         this.port = port;
@@ -61,7 +61,7 @@ public class ConnectionDetails {
         return username;
     }
 
-    public byte[] getPrivateKey() {
+    public String getPrivateKey() {
         return privateKey;
     }
     

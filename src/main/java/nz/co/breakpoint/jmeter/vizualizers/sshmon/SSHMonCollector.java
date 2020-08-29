@@ -46,8 +46,7 @@ public class SSHMonCollector
             String  command    = ((JMeterProperty)row.get(6)).getStringValue();
             boolean isDelta    = ((JMeterProperty)row.get(7)).getBooleanValue();
 
-            ConnectionDetails connectionDetails = new ConnectionDetails(username, host, port, password, 
-                privateKey.isEmpty()? null: privateKey.getBytes());
+            ConnectionDetails connectionDetails = new ConnectionDetails(username, host, port, password, privateKey);
 
             log.debug("Adding sampler for "+connectionDetails+" / "+command);
             samplers.add(new SSHMonSampler(label, connectionDetails, command, isDelta));
@@ -55,8 +54,9 @@ public class SSHMonCollector
     }
 
     @Override
-    public void testEnded(String host) {
-        super.testEnded(host);
-        SSHMonSampler.clearConnectionPool();
+    public void testStarted(String host) {
+        super.testStarted(host);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> SSHMonSampler.closeConnectionPool()));
     }
 }
+

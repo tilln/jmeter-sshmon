@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
  * (currently via process-exec-maven-plugin)
  */
 public class SSHMonSamplerIT {
-    public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0", Integer.valueOf(System.getProperty("sshmon.sshd.port")));
+    public static ConnectionDetails localConnection = SSHSessionFactoryIT.localConnection;
 
     public class MockSampleGenerator implements MonitoringSampleGenerator {
         protected String metric = "";
@@ -41,8 +41,8 @@ public class SSHMonSamplerIT {
         SSHMonSampler instance = new SSHMonSampler("test", localConnection, "echo 123", false);
         instance.generateSamples(collector);
         assertTrue(collector.collected);
-        assertEquals(collector.value, 123.0, 0.0);
-        assertEquals(collector.metric, "test");
+        assertEquals(123.0, collector.value,  0.0);
+        assertEquals("test", collector.metric);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class SSHMonSamplerIT {
         Locale.setDefault(Locale.GERMAN);
         SSHMonSampler instance = new SSHMonSampler("test", localConnection, "echo 1.234,5", false);
         instance.generateSamples(collector);
-        assertEquals(collector.value, 1234.5, 0.0);
+        assertEquals(1234.5, collector.value, 0.0);
         Locale.setDefault(restore);
     }
 
@@ -60,7 +60,7 @@ public class SSHMonSamplerIT {
         JMeterUtils.setProperty("jmeter.sshmon.locale", "de_DE");
         SSHMonSampler instance = new SSHMonSampler("test", localConnection, "echo 1.234,5", false);
         instance.generateSamples(collector);
-        assertEquals(collector.value, 1234.5, 0.0);
+        assertEquals(1234.5, collector.value, 0.0);
         JMeterUtils.setProperty("jmeter.sshmon.locale", "");
     }
 }

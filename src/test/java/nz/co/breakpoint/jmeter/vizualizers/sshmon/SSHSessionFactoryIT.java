@@ -4,21 +4,23 @@ import kg.apc.emulators.TestJMeterUtils;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.jmeter.util.JMeterUtils;
+import org.apache.sshd.client.future.AuthFuture;
+import org.apache.sshd.client.session.AbstractClientSession;
+import org.apache.sshd.client.session.ClientSessionImpl;
+import org.apache.sshd.common.SshException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import org.apache.sshd.client.session.ClientSession;
 
 public class SSHSessionFactoryIT {
-    public static ConnectionDetails localConnection = new ConnectionDetails("0.0.0.0", Integer.valueOf(System.getProperty("sshmon.sshd.port")));
+    public static ConnectionDetails localConnection = new ConnectionDetails("dummy",
+        "localhost", Integer.valueOf(System.getProperty("sshmon.sshd.port")), "dummy");
     public SSHSessionFactory instance;
-    public Session session;
+    public ClientSession session;
 
     @BeforeClass
     public static void setUpClass() {
@@ -32,33 +34,25 @@ public class SSHSessionFactoryIT {
     }
 
     @After
-    public void tearDown() {
-        if (session != null && session.isConnected()) {
-            session.disconnect();
+    public void tearDown() throws Exception {
+        if (session != null && !session.isClosed()) {
+            session.close();
             session = null;
         }
     }
 
     @Test
-    public void testWrap() throws Exception {
-        session = new JSch().getSession(""); // dummy
-        PooledObject<Session> actual = instance.wrap(session);
-        assertTrue(actual instanceof DefaultPooledObject);
-        assertEquals(session, actual.getObject());
-    }
-
-    @Test
     public void testCreateNoHostValidation() throws Exception {
         session = instance.create(localConnection);
-        assertTrue(session.isConnected());
+        assertTrue(session.isAuthenticated());
     }
 
-    @Test(expected=JSchException.class)
+    @Test(expected=SshException.class)
     public void testCreateFailedHostValidation() throws Exception {
         JMeterUtils.setProperty("jmeter.sshmon.knownHosts", "src/test/resources/failed_known_hosts");
         instance = new SSHSessionFactory();
         session = instance.create(localConnection);
-        assertFalse(session.isConnected());
+        assertFalse(session.isAuthenticated());
     }
 
     @Test
@@ -66,14 +60,14 @@ public class SSHSessionFactoryIT {
         JMeterUtils.setProperty("jmeter.sshmon.knownHosts", "src/test/resources/known_hosts");
         instance = new SSHSessionFactory();
         session = instance.create(localConnection);
-        assertTrue(session.isConnected());
+        assertTrue(session.isAuthenticated());
     }
 
     @Test
     public void testDestroyObject() throws Exception {
         session = instance.create(localConnection);
         instance.destroyObject(localConnection, instance.wrap(session));
-        assertFalse(session.isConnected());
+        assertFalse(session.isOpen());
     }
 
     @Test
