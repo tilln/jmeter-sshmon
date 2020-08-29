@@ -2,6 +2,8 @@ package nz.co.breakpoint.jmeter.vizualizers.sshmon;
 
 import java.util.ArrayList;
 import kg.apc.jmeter.vizualizers.MonitoringResultsCollector;
+import org.apache.jmeter.samplers.SampleEvent;
+import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testelement.property.CollectionProperty;
 import org.apache.jmeter.testelement.property.JMeterProperty;
 import org.apache.jmeter.util.JMeterUtils;
@@ -57,6 +59,15 @@ public class SSHMonCollector
     public void testStarted(String host) {
         super.testStarted(host);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> SSHMonSampler.closeConnectionPool()));
+    }
+
+    @Override
+    protected void monitoringSampleOccurred(SampleEvent event) {
+        SampleResult res = event.getResult();
+        // Fix #5: end time stamp not set
+        // https://github.com/undera/jmeter-plugins/blob/c8bf66d3f6742d7391764890cf110faae597b4fd/infra/common/src/main/java/kg/apc/jmeter/vizualizers/MonitoringSampleResult.java#L16
+        if (res != null && res.getEndTime() == 0) { res.setEndTime(res.getStartTime()); }
+        super.monitoringSampleOccurred(event);
     }
 }
 
