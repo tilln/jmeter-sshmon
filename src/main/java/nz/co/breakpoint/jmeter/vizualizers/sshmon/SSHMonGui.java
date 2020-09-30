@@ -15,10 +15,10 @@ public class SSHMonGui
         "Label", "Host", "Port", "Username", "Private Key (PEM)", "Password", "Command", "Delta"
     };
     protected static Class[] columnClasses = new Class[]{
-        String.class, String.class, Integer.class, String.class, String.class, String.class, String.class, Boolean.class
+        String.class, String.class, String.class, String.class, String.class, String.class, String.class, Boolean.class
     };
     protected static Object[] defaultValues = new Object[]{
-        "", "", 22, "", "", "", "", false
+        "", "", "22", "", "", "", "", false
     };
     protected static int[] columnWidths = new int[]{
         100, 100, 50, 100, 120, 100, 500, 50
