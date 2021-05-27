@@ -4,7 +4,7 @@
     <groupId>nz.co.breakpoint.jmeter</groupId>
     <artifactId>jmeter-sshmon</artifactId>
     <packaging>jar</packaging>
-    <version>1.3</version>
+    <version>1.4-SNAPSHOT</version>
     <name>jmeter-sshmon</name>
 
     <properties>
