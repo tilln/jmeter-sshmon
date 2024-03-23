@@ -1,7 +1,4 @@
-# SSHMon Samples Collector [![travis][travis-image]][travis-url]
-
-[travis-image]: https://travis-ci.org/tilln/jmeter-sshmon.svg?branch=master
-[travis-url]: https://travis-ci.org/tilln/jmeter-sshmon
+# SSHMon Samples Collector [![github-actions](https://github.com/tilln/jmeter-sshmon/actions/workflows/release.yml/badge.svg)](https://github.com/tilln/jmeter-sshmon/actions/workflows/release.yml)
 
 Overview
 --------
@@ -27,15 +24,15 @@ Under tab "Available Plugins", select "SSHMon Samples Collector", then click "Ap
 
 ### Via Package from [JMeter-Plugins.org](https://jmeter-plugins.org/)
 
-Extract the [zip package](https://jmeter-plugins.org/files/packages/tilln-sshmon-1.3.zip) into JMeter's lib directory, then restart JMeter.
+Extract the [zip package](https://jmeter-plugins.org/files/packages/tilln-sshmon-1.4.zip) into JMeter's lib directory, then restart JMeter.
 
 ### Via Manual Download
 
-1. Copy the [jmeter-sshmon jar file](https://github.com/tilln/jmeter-sshmon/releases/download/1.3/jmeter-sshmon-1.3.jar) into JMeter's lib/ext directory.
+1. Copy the [jmeter-sshmon jar file](https://github.com/tilln/jmeter-sshmon/releases/download/1.4/jmeter-sshmon-1.4.jar) into JMeter's lib/ext directory.
 2. Copy the following dependencies into JMeter's lib directory:
-	* [kg.apc / jmeter-plugins-cmn-jmeter](https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-cmn-jmeter/0.6/jmeter-plugins-cmn-jmeter-0.6.jar)
-    * [org.apache.sshd / sshd-core](https://search.maven.org/remotecontent?filepath=org/apache/sshd/sshd-core/2.6.0/sshd-core-2.6.0.jar)
-    * [org.apache.sshd / sshd-common](https://search.maven.org/remotecontent?filepath=org/apache/sshd/sshd-common/2.6.0/sshd-common-2.6.0.jar)
+	* [kg.apc / jmeter-plugins-cmn-jmeter](https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-cmn-jmeter/0.7/jmeter-plugins-cmn-jmeter-0.7.jar)
+    * [org.apache.sshd / sshd-core](https://search.maven.org/remotecontent?filepath=org/apache/sshd/sshd-core/2.12.1/sshd-core-2.12.1.jar)
+    * [org.apache.sshd / sshd-common](https://search.maven.org/remotecontent?filepath=org/apache/sshd/sshd-common/2.12.1/sshd-common-2.12.1.jar)
 3. Restart JMeter.
 
 **Important: Make sure to remove any older jar file version than `jmeter-plugins-cmn-jmeter-0.6.jar` from JMeter's lib directory!**
